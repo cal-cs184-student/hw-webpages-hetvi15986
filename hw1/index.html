@@ -51,82 +51,124 @@
 			<h3> basic/test4.svg </h3><p> Here is the result of rasterizing the basic/test4.svg file, which contains a single triangle. The triangle is rasterized correctly, and the output matches the expected. </p><div style="display: flex; flex-direction: column; align-items: center;"> <table style="width: 100%; text-align: center; border-collapse: collapse;"> <tr> <td style="text-align: center;"> <img src="task1im/im1.png" width="400px"/> <figcaption>Rasterized Image from far</figcaption> </td> <td style="text-align: center;"> <img src="task1im/im2.png" width="400px"/> <figcaption>Close Up: Holes</figcaption> </td> </tr> <tr> <td style="text-align: center;"> <img src="task1im/im3.png" width="400px"/> <figcaption>Close Up: Holes</figcaption> </td> <td style="text-align: center;"> <img src="task1im/im4.png" width="400px"/> <figcaption>Close Up: Warping</figcaption> </td> </tr> </table> </div>
 		
 		<h2>Task 2: Antialiasing by Supersampling</h2> <p> Aliasing mainly arises from low sampling rates on high frequency signals. One way to mitigate this is to take out high frequencies in the first place (low pass filters), and ending up with only lower frequency sigmals that don't cause aliasing. The second way to prevent aliasing is to sample more, at higher frequencies. </p>
-			<h3>Supersampling Algorithm and Data Structures</h3>
-		   <p>Supersampling is used to reduce artifacts from aliasing by sampling at higher frequencies than the original image resolution. This is done by taking multiple samples per pixel and averaging them to produce a single output pixel value. The main change I made was in expanding <code>sample_buffer</code> from width W * height H to W * H * sampling rate S, representing the number of subsamples per sample. Each sampled pixel gets S slots, for S subsamples. I used <code>sample_buffer[sample_rate * (y*width + x) + s]</code> to index into this subsample's location to find its values.</p>
-			<p> I changed the rasterization pipeline to support supersampling.First, in <code>rasterize_triangle</code>, I implemented another nested-two-loop inside of the nested-two-loop sampling all of the pixels in the bound box in order to support subsampling.  Now, the inner loop also iterates over an <code>sqrt(S) x sqrt(S) </code> grid within each pixel, where S is the sampling rate. his was done by adding a term of (S + 0.5f) to the x and y coordinates of the sample point, and then dividing by sqrt(S). For example, if the sampling rate is 4, then for each pixel, I would subsample a 2x2 grid of sub-samples within each pixel. The larger the sampling rate, the more sub-samples are taken, and the smoother the final image will appear to be to the human eye. </p>
-			<p> I also changed <code>fill_pixel</code> so that all S slots for a pixel are filled in with the same color, as suggested by commented code. </p>
-			<p> Finally, I changed <code>resolve_to_framebuffer</code> to average all sub-samples for each pixel and write the single averaged value to the framebuffer. </p>
-				<h3> Reflection on Supersampling </h3><p> Supersampling was very effective in reducing aliasing artifacts in the rendered image, and making the image seem sharper to my eye. By increasing the sampling rate, I produced smoother edges and reduced jagged lines seen in the low-sampled images. These improvements were especially noticeable in areas with high-frequency details, such as in the triangles with low interior angles resulting in sharp edges.</p>
-		<h3> Results </h3> <p> Here are the results of rasterizing the basic/test4.svg file with different sampling rates in [1,4,9,16]. The images get much smoother and have less aliasing artifacts as sampling rate is increased.</p>
-<h3> Red Triangle </h3>
-		<div style="display: flex; flex-direction: column; align-items: center;"> 
-	<table style="width: 100%; text-align: center; border-collapse: collapse;"> <tr> 
-		<td style="text-align: center;"> <img src="task2im/red1.png" width="400px"/> <figcaption>Red Triangle, Sampling rate = 1</figcaption> </td> 
-		<td style="text-align: center;"> <img src="task2im/red4.png" width="400px"/> <figcaption>Red Triangle, Sampling rate = 4</figcaption> </td> 
-	   </tr> <tr> <td style="text-align: center;"> <img src="task2im/red9.png" width="400px"/> <figcaption>Red Triangle, Sampling rate = 9</figcaption> </td> 
-		<td style="text-align: center;"> <img src="task2im/red16.png" width="400px"/> <figcaption>Red Triangle, Sampling rate = 16</figcaption> </td> </tr> </table> </div>
-<h3> Yellow Triangle </h3>
-<div style="display: flex; flex-direction: column; align-items: center;"> 
-	<table style="width: 100%; text-align: center; border-collapse: collapse;"> <tr> 
-		<td style="text-align: center;"> <img src="task2im/yellow1.png" width="400px"/> <figcaption>Yellow Triangle, Sampling rate = 1</figcaption> </td> 
-		<td style="text-align: center;"> <img src="task2im/yellow16.png" width="400px"/> <figcaption>Yellow Triangle, Sampling rate = 16</figcaption> </td> </table> </div>
-	<h3> Blue Triangle </h3>
-<div style="display: flex; flex-direction: column; align-items: center;"> 
-	<table style="width: 100%; text-align: center; border-collapse: collapse;"> <tr> 
-		<td style="text-align: center;"> <img src="task2im/blue1.png" width="400px"/> <figcaption>Blue Triangle, Sampling rate = 1</figcaption> </td> 
-		<td style="text-align: center;"> <img src="task2im/blue16.png" width="400px"/> <figcaption>Blue Triangle, Sampling rate = 16</figcaption> </td> </table> </div>
-		<h3> Purple Triangle </h3>
-<div style="display: flex; flex-direction: column; align-items: center;"> 
-	<table style="width: 100%; text-align: center; border-collapse: collapse;"> <tr> 
-		<td style="text-align: center;"> <img src="task2im/purple1.png" width="400px"/> <figcaption>Purple Triangle, Sampling rate = 1</figcaption> </td> 
-		<td style="text-align: center;"> <img src="task2im/purple16.png" width="400px"/> <figcaption>Purple Triangle, Sampling rate = 16</figcaption> </td> </table> </div>
-			<h3>Green Triangle</h3>
-<div style="display: flex; flex-direction: column; align-items: center;"> 
-	<table style="width: 100%; text-align: center; border-collapse: collapse;"> <tr> 
-		<td style="text-align: center;"> <img src="task2im/green1.png" width="400px"/> <figcaption>Green Triangle, Sampling rate = 1</figcaption> </td> 
-		<td style="text-align: center;"> <img src="task2im/green16.png" width="400px"/> <figcaption>Green Triangle, Sampling rate = 16</figcaption> </td> </table> </div>
+						<h3>Supersampling Algorithm and Data Structures</h3>
+					<p>Supersampling is used to reduce artifacts from aliasing by sampling at higher frequencies than the original image resolution. This is done by taking multiple samples per pixel and averaging them to produce a single output pixel value. The main change I made was in expanding <code>sample_buffer</code> from width W * height H to W * H * sampling rate S, representing the number of subsamples per sample. Each sampled pixel gets S slots, for S subsamples. I used <code>sample_buffer[sample_rate * (y*width + x) + s]</code> to index into this subsample's location to find its values.</p>
+						<p> I changed the rasterization pipeline to support supersampling.First, in <code>rasterize_triangle</code>, I implemented another nested-two-loop inside of the nested-two-loop sampling all of the pixels in the bound box in order to support subsampling.  Now, the inner loop also iterates over an <code>sqrt(S) x sqrt(S) </code> grid within each pixel, where S is the sampling rate. his was done by adding a term of (S + 0.5f) to the x and y coordinates of the sample point, and then dividing by sqrt(S). For example, if the sampling rate is 4, then for each pixel, I would subsample a 2x2 grid of sub-samples within each pixel. The larger the sampling rate, the more sub-samples are taken, and the smoother the final image will appear to be to the human eye. </p>
+						<p> I also changed <code>fill_pixel</code> so that all S slots for a pixel are filled in with the same color, as suggested by commented code. </p>
+						<p> Finally, I changed <code>resolve_to_framebuffer</code> to average all sub-samples for each pixel and write the single averaged value to the framebuffer. </p>
+							<h3> Reflection on Supersampling </h3><p> Supersampling was very effective in reducing aliasing artifacts in the rendered image, and making the image seem sharper to my eye. By increasing the sampling rate, I produced smoother edges and reduced jagged lines seen in the low-sampled images. These improvements were especially noticeable in areas with high-frequency details, such as in the triangles with low interior angles resulting in sharp edges.</p>
+						<h3> Results </h3> <p> Here are the results of rasterizing the basic/test4.svg file with different sampling rates in [1,4,9,16]. The images get much smoother and have less aliasing artifacts as sampling rate is increased.</p>
+						<h3> Red Triangle </h3>
+								<div style="display: flex; flex-direction: column; align-items: center;"> 
+							<table style="width: 100%; text-align: center; border-collapse: collapse;"> <tr> 
+								<td style="text-align: center;"> <img src="task2im/red1.png" width="400px"/> <figcaption>Red Triangle, Sampling rate = 1</figcaption> </td> 
+								<td style="text-align: center;"> <img src="task2im/red4.png" width="400px"/> <figcaption>Red Triangle, Sampling rate = 4</figcaption> </td> 
+							</tr> <tr> <td style="text-align: center;"> <img src="task2im/red9.png" width="400px"/> <figcaption>Red Triangle, Sampling rate = 9</figcaption> </td> 
+								<td style="text-align: center;"> <img src="task2im/red16.png" width="400px"/> <figcaption>Red Triangle, Sampling rate = 16</figcaption> </td> </tr> </table> </div>
+								<h3> Yellow Triangle </h3>
+								<div style="display: flex; flex-direction: column; align-items: center;"> 
+									<table style="width: 100%; text-align: center; border-collapse: collapse;"> <tr> 
+										<td style="text-align: center;"> <img src="task2im/yellow1.png" width="400px"/> <figcaption>Yellow Triangle, Sampling rate = 1</figcaption> </td> 
+										<td style="text-align: center;"> <img src="task2im/yellow16.png" width="400px"/> <figcaption>Yellow Triangle, Sampling rate = 16</figcaption> </td> </table> </div>
+									<h3> Blue Triangle </h3>
+								<div style="display: flex; flex-direction: column; align-items: center;"> 
+									<table style="width: 100%; text-align: center; border-collapse: collapse;"> <tr> 
+										<td style="text-align: center;"> <img src="task2im/blue1.png" width="400px"/> <figcaption>Blue Triangle, Sampling rate = 1</figcaption> </td> 
+										<td style="text-align: center;"> <img src="task2im/blue16.png" width="400px"/> <figcaption>Blue Triangle, Sampling rate = 16</figcaption> </td> </table> </div>
+										<h3> Purple Triangle </h3>
+								<div style="display: flex; flex-direction: column; align-items: center;"> 
+									<table style="width: 100%; text-align: center; border-collapse: collapse;"> <tr> 
+										<td style="text-align: center;"> <img src="task2im/purple1.png" width="400px"/> <figcaption>Purple Triangle, Sampling rate = 1</figcaption> </td> 
+										<td style="text-align: center;"> <img src="task2im/purple16.png" width="400px"/> <figcaption>Purple Triangle, Sampling rate = 16</figcaption> </td> </table> </div>
+											<h3>Green Triangle</h3>
+								<div style="display: flex; flex-direction: column; align-items: center;"> 
+									<table style="width: 100%; text-align: center; border-collapse: collapse;"> <tr> 
+										<td style="text-align: center;"> <img src="task2im/green1.png" width="400px"/> <figcaption>Green Triangle, Sampling rate = 1</figcaption> </td> 
+										<td style="text-align: center;"> <img src="task2im/green16.png" width="400px"/> <figcaption>Green Triangle, Sampling rate = 16</figcaption> </td> </table> </div>
 
-<h3> Extra Credit: Jittering </h3> <p>I also implemented jittered supersampling. Within each subsample, I randomly offset the sample point’s coordinated by a random uniform value between 0 and 1, instead of keeping the sample point always centered. This was done by adding an offset (sx+noise) to the x and y coordinates. This helps break up any stagnant, unmoving parts of the image via the introduction of random noise. This noise to the human eye looks better than aliased images, and sometimes is able to cover aliasing artifacts better than normal supersampling. However, this is still noise to the image, and the variance between image renders can be high, compared to without Below are some images, to compare with the images above. </p>
+							<h3> Extra Credit: Jittering </h3> <p>I also implemented jittered supersampling. Within each subsample, I randomly offset the sample point’s coordinated by a random uniform value between 0 and 1, instead of keeping the sample point always centered. This was done by adding an offset (sx+noise) to the x and y coordinates. This helps break up any stagnant, unmoving parts of the image via the introduction of random noise. This noise to the human eye looks better than aliased images, and sometimes is able to cover aliasing artifacts better than normal supersampling. However, this is still noise to the image, and the variance between image renders can be high, compared to without Below are some images, to compare with the images above. </p>
 
-<h3> Red Triangle (jittered) </h3>
-		<div style="display: flex; flex-direction: column; align-items: center;"> 
-	<table style="width: 100%; text-align: center; border-collapse: collapse;"> <tr> 
-		<td style="text-align: center;"> <img src="task2im/ec/red1a.png" width="400px"/> <figcaption>Red Triangle, Sampling rate = 1, jittered </figcaption> </td> 
-		<td style="text-align: center;"> <img src="task2im/ec/red1b.png" width="400px"/> <figcaption>Red Triangle, Sampling rate = 1, jittered </figcaption> </td> 
-	   </tr> <tr> <td style="text-align: center;"> <img src="task2im/ec/red16a.png" width="400px"/> <figcaption>Red Triangle, Sampling rate = 16, jittered</figcaption> </td> 
-		<td style="text-align: center;"> <img src="task2im/ec/red16b.png" width="400px"/>           <figcaption>Red Triangle, Sampling rate = 16, jittered</figcaption> </td> </tr> </table> </div>
-<h3> Yellow Triangle (jittered)</h3>
-		<div style="display: flex; flex-direction: column; align-items: center;"> 
-	<table style="width: 100%; text-align: center; border-collapse: collapse;"> <tr> 
-		<td style="text-align: center;"> <img src="task2im/ec/yellow1a.png" width="400px"/> <figcaption>Yellow Triangle, Sampling rate = 1, jittered </figcaption> </td> 
-		<td style="text-align: center;"> <img src="task2im/ec/yellow1b.png" width="400px"/> <figcaption>Yellow Triangle, Sampling rate = 1, jittered </figcaption> </td> 
-	   </tr> <tr> <td style="text-align: center;"> <img src="task2im/ec/yellow16a.png" width="400px"/> <figcaption>Yellow Triangle, Sampling rate = 16, jittered</figcaption> </td> 
-		<td style="text-align: center;"> <img src="task2im/ec/yellow16b.png" width="400px"/>           <figcaption>Yellow Triangle, Sampling rate = 16, jittered</figcaption> </td> </tr> </table> </div>
-<h3> Purple Triangle (jittered)</h3>
-		<div style="display: flex; flex-direction: column; align-items: center;"> 
-	<table style="width: 100%; text-align: center; border-collapse: collapse;"> <tr> 
-		<td style="text-align: center;"> <img src="task2im/ec/purple1a.png" width="400px"/> <figcaption>Purple Triangle, Sampling rate = 1, jittered </figcaption> </td> 
-		<td style="text-align: center;"> <img src="task2im/ec/purple1b.png" width="400px"/> <figcaption>Purple Triangle, Sampling rate = 1, jittered </figcaption> </td> 
-	   </tr> <tr> <td style="text-align: center;"> <img src="task2im/ec/purple16a.png" width="400px"/> <figcaption>Purple Triangle, Sampling rate = 16, jittered</figcaption> </td> 
-		<td style="text-align: center;"> <img src="task2im/ec/purple16b.png" width="400px"/>           <figcaption>Purple Triangle, Sampling rate = 16, jittered</figcaption> </td> </tr> </table> </div>
-
-
+										<h3> Red Triangle (jittered) </h3>
+												<div style="display: flex; flex-direction: column; align-items: center;"> 
+											<table style="width: 100%; text-align: center; border-collapse: collapse;"> <tr> 
+												<td style="text-align: center;"> <img src="task2im/ec/red1a.png" width="400px"/> <figcaption>Red Triangle, Sampling rate = 1, jittered </figcaption> </td> 
+												<td style="text-align: center;"> <img src="task2im/ec/red1b.png" width="400px"/> <figcaption>Red Triangle, Sampling rate = 1, jittered </figcaption> </td> 
+											</tr> <tr> <td style="text-align: center;"> <img src="task2im/ec/red16a.png" width="400px"/> <figcaption>Red Triangle, Sampling rate = 16, jittered</figcaption> </td> 
+												<td style="text-align: center;"> <img src="task2im/ec/red16b.png" width="400px"/>           <figcaption>Red Triangle, Sampling rate = 16, jittered</figcaption> </td> </tr> </table> </div>
+										<h3> Yellow Triangle (jittered)</h3>
+												<div style="display: flex; flex-direction: column; align-items: center;"> 
+											<table style="width: 100%; text-align: center; border-collapse: collapse;"> <tr> 
+												<td style="text-align: center;"> <img src="task2im/ec/yellow1a.png" width="400px"/> <figcaption>Yellow Triangle, Sampling rate = 1, jittered </figcaption> </td> 
+												<td style="text-align: center;"> <img src="task2im/ec/yellow1b.png" width="400px"/> <figcaption>Yellow Triangle, Sampling rate = 1, jittered </figcaption> </td> 
+											</tr> <tr> <td style="text-align: center;"> <img src="task2im/ec/yellow16a.png" width="400px"/> <figcaption>Yellow Triangle, Sampling rate = 16, jittered</figcaption> </td> 
+												<td style="text-align: center;"> <img src="task2im/ec/yellow16b.png" width="400px"/>           <figcaption>Yellow Triangle, Sampling rate = 16, jittered</figcaption> </td> </tr> </table> </div>
+										<h3> Purple Triangle (jittered)</h3>
+												<div style="display: flex; flex-direction: column; align-items: center;"> 
+											<table style="width: 100%; text-align: center; border-collapse: collapse;"> <tr> 
+												<td style="text-align: center;"> <img src="task2im/ec/purple1a.png" width="400px"/> <figcaption>Purple Triangle, Sampling rate = 1, jittered </figcaption> </td> 
+												<td style="text-align: center;"> <img src="task2im/ec/purple1b.png" width="400px"/> <figcaption>Purple Triangle, Sampling rate = 1, jittered </figcaption> </td> 
+											</tr> <tr> <td style="text-align: center;"> <img src="task2im/ec/purple16a.png" width="400px"/> <figcaption>Purple Triangle, Sampling rate = 16, jittered</figcaption> </td> 
+												<td style="text-align: center;"> <img src="task2im/ec/purple16b.png" width="400px"/>           <figcaption>Purple Triangle, Sampling rate = 16, jittered</figcaption> </td> </tr> </table> </div>
 
 
+<h2>Task 3: Transforms</h2><p>In this task, I implemented a translate, scaling, and rotation matrix. Here's what my <code> robot.svg </code> file looks like to start. </p> 
+							<figure><img src="task3im/init.png" alt="Robot (init)" style="width:50%"/><figcaption>Original Robot</figcaption></figure>
+							<h3> Transformed Robot: Jumping Jack </h2>
+							<p> (our) Right Arm: translated (90 -70), Rotated -50 degrees, scaled by (.6 .2)</p>
+							<p> (our) Left Arm: translated (-90 -70), Rotated  50 degrees, scaled by (.6 .2)</p>
+							<p> (our) Right Leg: translated (80  80), Rotated -50 degrees, scaled by (.2 .6)</p>
+							<p> (our) Left Leg: translated (-80  80), Rotated  50 degrees, scaled by (.2 .6)</p>
+							<figure><img src="task3im/jumping.png" alt="Robot (jumping jack)" style="width:50%"/><figcaption>Transformed Robot</figcaption></figure>
+							<h3> Bonus: winter olympics inspired </h2><figure><img src="task3im/olympics.png" style="width:50%"/><figcaption>Half Biellmann Spin</figcaption></figure>
+
+<h2>Task 4: Barycentric coordinates</h2>
+							<h3> WHat are Barycentric coordinates? </h3> <p> Barycentric coordinates help describe any point inside a triangle using a weighted combination of its three vertices. For a Point P inside Triangle ABC, P can be expressed as P = αA + βB + γC, where α + β + γ = 1 and all weights are non-negative. These weights indicate how close P is to a respective vertex. If P is at vertex A, then α=1, β=0, γ=0. If P is at the center of the triangle, then α=β=γ=1/3. Points along an edge will have one weight equal to zero. The higher a barycentric weight is, the coloser the point is to that vertex. </p><p>The weights can be calculated using the areas of sub-triangles formed by P and the vertices, normalized by the total area of the triangle ABC (<code> total_area</code>): α = area(PBC)/total_area, β = area(APC) / total_area, and γ = area(ABP) / total_area. </p>
+							<h3> Visualization of Barycentric Coordinates</h3>  <p> The triangle below has a <span style="color:red"><strong>red</strong></span> vertex at the top (alpha = 1), a <span style="color:green"><strong>green</strong></span> vertex at the bottom left (beta = 1), and a <span style="color:blue"><strong>blue</strong></span> vertex on the bottom right (gamma = 1). Each pixel's color is computed by interpolating the three vertex colors using barycentric weights in <code>rasterize_interpolated_color_triangle</code>: </p><div class="formula">color(P) = &alpha;&middot;c<sub>0</sub> + &beta;&middot;c<sub>1</sub> + &gamma;&middot;c<sub>2</sub></div>
+									<figure><img src="task4im/triangle.png"  style="width:50%"/><figcaption>Triangle with RGB Vertices</figcaption></figure>
+
+
+								<h3>How It's Implemented</h2><p>In <code>rasterize_interpolated_color_triangle</code>, for each sample point inside of the triangle, I calculate the three edge function
+								values and normalize them by the total triangle area to get barycentric weights alpha, beta, and gamma. The interpolated color is then: <div class="formula">Color c = a*c0 + b*c1 + g*c2;</div> This makes for a smooth, continuous gradient across the triangle.</p> 
+								<h3> svg/basic/test7.svg: default viewing parameters, sample rate 1 </h3><figure><img src="task4im/rainbow.png"  style="width:50%"/><figcaption>Circle: Color Gradient</figcaption></figure>
 
 
 
 
 
 
-			<h2>Task 3: Transforms</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 
-		<h2>Task 4: Barycentric coordinates</h2>f
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+
+
+
+
+
+
+
+
+
+
 
 		<h2>Task 5: "Pixel sampling" for texture mapping</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+		<h3> What is Pixel Sampling? </h3> <p> Since pixels on a screen and pixels on a texture image don't have a one-to-one correspondance, we decide how to sample the tecture using texels. Pixel sampling is the way we read a color from the texture given a continuous coordinates that often fall between texels.This is done using barycentric coordinates to interpolate the texture coordinates (u,v) for each pixel (x,y) in the image. After interpolating texture coordinates, we sample the texture image to get the pixel's color.</p> <p> Implementing pixel sampling largely followed a similar road-map to the previous tasks, with some changes. First, interpolate texture coords (u,v) for each pixel (x,y) with barycentric coordinates, and then sample the texture at these coordinated to get the pixel's color.</p><p>For each sample point (x,y) inside the triangle, I calculate barycentric weights (a,b,g). These weights are then used to interpolate the UV texture coordinates from the three vertices [(u0,v0), (u1,v1), (u2,v2)] of the triangle: <code>u = a*u0 + b*u1 + g*u2</code> and <code>v = a*v0 + b*v1 + g*v2 </code> . </p><p>Now, we have continuous uv coordinates we can use to sample textures, and fill in the SampleParams struct with these coordinates. Lastly, calling tex.sample(sp) results in the use of either nearest neighbor or bilinear interpolation. </p>
+
+									<h4>Nearest Neighbor Sampling</h4> <p> Nearest neighbor sampling selects the color of the texel center closest to the texture coordinates (u,v) for each pixel (x,y). This method is fast, but can produce aliasing artifacts and looks blocky, especially when zoomed in. </p>
+									<h4>Bilinear Interpolation</h4> <p> Bilinear interpolation samples the four texels surrounding texture coordinates(u,v) and calculates a distance-based weighted average between the texels, resulting in smoother textures and  less aliasing, especially when zoomed in. But, it is more computationally taxing. </p>
+										<h3> svg/texmap/test1.svg </h3>
+								<div style="display: flex; flex-direction: column; align-items: center;"> 
+											<table style="width: 100%; text-align: center; border-collapse: collapse;"> <tr> 
+												<td style="text-align: center;"> <img src="task5im/nn1.png" width="400px"/> <figcaption>Nearest Neighbor, sampling rate = 1</figcaption> </td> 
+												<td style="text-align: center;"> <img src="task5im/nn16.png" width="400px"/> <figcaption>Nearest Neighbor, sampling rate = 16</figcaption> </td> 
+											</tr> <tr> <td style="text-align: center;"> <img src="task5im/b1.png" width="400px"/> <figcaption>Bilinear, sampling rate = 1</figcaption> </td> 
+												<td style="text-align: center;"> <img src="task5im/b16.png" width="400px"/>           <figcaption>Bilinear, sampling rate = 16</figcaption> </td> </tr> </table>
+											</div>
+											<p> These images show the difference between nearest neighbor and bilinear sampling. When focusing in on the islands of SouthEast Asia, the nearest neighbor method produces a blocky appearance of the islands, making stark contrasts between the islands and sea, making the map look choppy and jagged and blocky when magnified– which landforms are usually not. 
+												On the other hand, bilinear interpolation produces smoother results, making the map more lifelike and visually appealing, and comprehensible overall, even though some information may have been lost to blur/averaging in the process. The higher the sampling rate, however, the less difference between the two methods gets to our visual system, as both are fine-details.  However, as the sampling rate increases, the cost of bilinear interpolation will be noticably higher than nearest neighbor sampling. This indicates that supersampling affects aliasing at the point of datacollection, while bilinear interpolation is a post-processing technique that smooths out aliasing artifacts after sampling through smoothening.</p>
+												<p> At one sample per pixel, the difference is highest due to the harsh transitions between pixels at this sampling rate. This difference is pronounced  when the image is zoomed in, when the image is sampled at a very low rate, or when the image has patterns that trick nearest neighbors into creating visual defects.</p>
+
+
+
 
 		<h2>Task 6: "Level Sampling" with mipmaps for texture mapping</h2>
 		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.

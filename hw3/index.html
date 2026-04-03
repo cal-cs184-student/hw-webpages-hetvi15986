@@ -260,6 +260,61 @@ Clearly, Importance sampling results in less noise at the same sample counts, du
 		</div>
 
 
+<h3>For CBbunny.dae, render the mth bounce of light with max_ray_depth set to 0, 1, 2, 3, 4, and 5 (the -m flag), and isAccumBounces=false.  Use 1024 samples per pixel.
+	<br>Explain in your write-up what you see for the 2nd and 3rd bounce of light, and how it contributes to the quality of the rendered image compared to rasterization.</h3>
+<table border="1" cellpadding="8" cellspacing="0">
+  <thead>
+    <tr>
+      <th>isAccumBounces</th>
+      <th>m=0</th>
+      <th>m=1</th>
+      <th>m=2</th>
+      <th>m=3</th>
+      <th>m=4</th>
+      <th>m=5</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>false (unaccumulated)</td>
+      <td><img src="un/bunny_unaccum_m0.png" width="150"></td>
+      <td><img src="un/bunny_unaccum_m1.png" width="150"></td>
+      <td><img src="un/bunny_unaccum_m2.png" width="150"></td>
+      <td><img src="un/bunny_unaccum_m3.png" width="150"></td>
+      <td><img src="un/bunny_unaccum_m4.png" width="150"></td>
+      <td><img src="un/bunny_unaccum_m5.png" width="150"></td>
+    </tr>
+    <tr>
+      <td>true (accumulated)</td>
+      <td><img src="ac/bunny_accum_m0.png" width="150"></td>
+      <td><img src="ac/bunny_accum_m1.png" width="150"></td>
+      <td><img src="ac/bunny_accum_m2.png" width="150"></td>
+      <td><img src="ac/bunny_accum_m3.png" width="150"></td>
+      <td><img src="ac/bunny_accum_m4.png" width="150"></td>
+      <td><img src="ac/bunny_accum_m5.png" width="150"></td>
+    </tr>
+  </tbody>
+</table>
+
+
+I rendered the scene <code>CBbunny.dae</code> with the <code>-m</code> flag set to 0, 1, 2, 3, 4, and 5 using 1024 samples per pixel and <code>isAccumBounces=false</code> to isolate each bounce:
+
+<ul> <li><strong>0 bounces:</strong> <ul> <li>Only direct illumination is visible.</li> <li>Shadows and indirect light are absent, flat appearance.</li> </ul> </li> <li><strong>1st bounce:</strong> <ul> <li>Shows direct lighting and initial soft shadows.</li> <li>Indirect contributions are still missing.</li> </ul> </li> <li><strong>2nd bounce:</strong> <ul> <li>Light begins reflecting off surfaces, filling in shadowed regions.</li> <li>Introduces subtle color bleeding.</li> </ul> </li> <li><strong>3rd bounce:</strong> <ul> <li>Additional indirect light smooths gradients and illuminates occluded areas.</li> </ul> </li> <li><strong>4th–5th bounces:</strong> <ul> <li>Contribute progressively smaller refinements.</li> <li>Enhance realism in subtle shadowed regions.</li> </ul> </li> </ul>
+
+Compared to rasterization, these bounces produce physically accurate soft shadows and indirect illumination that rasterization can't reproduce without approximations.P
+
+
+<h3>2. Accumulated vs Unaccumulated Bounces</h3> <ul> <li><strong>Unaccumulated (<code>isAccumBounces=false</code>):</strong> <ul> <li>Each image shows only the contribution of the specific bounce.</li> <li>Useful to analyze how each bounce affects the scene.</li> </ul> </li> <li><strong>Accumulated (<code>isAccumBounces=true</code>):</strong> <ul> <li>Each image sums all bounces up to the current <code>max_ray_depth</code>.</li> <li>Produces full global illumination with soft shadows, color bleeding, and stable indirect lighting.</li> </ul> </li> </ul>
+
+This comparison demonstrates the importance of higher-order bounces for realistic lighting.
+
+
+
+
+<h3> For CBbunny.dae, output the Russian Roulette rendering with max_ray_depth set to 0, 1, 2, 3, 4, and 100(the -m flag). Use 1024 samples per pixel. </h3>
+
+
+
 
 
 
